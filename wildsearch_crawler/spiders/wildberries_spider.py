@@ -2,6 +2,7 @@
 
 import scrapy
 
+
 class WildberriesSpider(scrapy.Spider):
     name = "wb"
 
@@ -29,8 +30,8 @@ class WildberriesSpider(scrapy.Spider):
         # create list of images
         image_urls = []
 
-        for th in (response.css('.pv-carousel .carousel a img::attr(src)')):
-            image_urls.append(th.get().strip().replace('tm', 'big'))
+        for tm in (response.css('.pv-carousel .carousel a img::attr(src)')):
+            image_urls.append(tm.get().strip().replace('tm', 'big'))
 
         yield {
             'marketplace': 'wildberries',
@@ -39,7 +40,7 @@ class WildberriesSpider(scrapy.Spider):
             'image_urls': image_urls,
             'wb_id': extract_with_css('div.article span::text'),
             'wb_reviews_count': extract_with_css('.count-review i::text'),
-            'wb_purchases_count': extract_with_css('.j-orders-count::text'), # не работает, отрисовывается JS после рендера страницы
+            'wb_purchases_count': extract_with_css('.j-orders-count::text'),  # не работает, JS render
             'wb_price': extract_with_css('.final-cost::text'),
             'wb_rating': extract_with_css('.product-rating span::text')
         }
