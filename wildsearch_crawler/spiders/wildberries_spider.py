@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import datetime
 import scrapy
 
 
@@ -34,6 +35,7 @@ class WildberriesSpider(scrapy.Spider):
             image_urls.append(tm.get().strip().replace('tm', 'big'))
 
         yield {
+            'parse_date': datetime.datetime.now().isoformat(" "),
             'marketplace': 'wildberries',
             'product_url': response.url,
             'product_name': extract_with_css('.brand-and-name .name::text'),
