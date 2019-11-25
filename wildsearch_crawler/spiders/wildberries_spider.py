@@ -69,7 +69,6 @@ class WildberriesSpider(scrapy.Spider):
         loader.add_css('wb_price', '.final-cost::text')
         loader.add_css('wb_rating', '.product-rating span::text')
         loader.add_css('wb_id', 'div.article span::text')
-        loader.add_css('wb_purchases_count', '.j-orders-count::text')  # @TODO: не работает, JS render
 
         # fill non-css values
         loader.add_value('parse_date', datetime.datetime.now().isoformat(" "))
@@ -78,6 +77,10 @@ class WildberriesSpider(scrapy.Spider):
         loader.add_value('image_urls', image_urls)
         loader.add_value('wb_brand_country', wb_brand_country)
         loader.add_value('wb_manufacture_country', wb_manufacture_country)
+
+        # fill purchase count
+        # "ordersCount":1100,
+        loader.add_value('wb_purchases_count', re.compile('"ordersCount":(\d+),').search(response.text)[1])
 
         if parent_item is not None:
             loader.add_value('wb_parent_id', parent_item.get('wb_id', ''))
