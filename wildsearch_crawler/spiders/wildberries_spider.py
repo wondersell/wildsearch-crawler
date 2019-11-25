@@ -84,8 +84,8 @@ class WildberriesSpider(scrapy.Spider):
 
         # get reviews dates
         reviews_links = [
-            # generate_reviews_link(response.url, 'Asc'), Чтобы не разбираться с сохранением асинхронных запросов
-            generate_reviews_link(response.url, 'Desc')
+            generate_reviews_link(response.url, 'Asc')
+            # generate_reviews_link(response.url, 'Desc') Чтобы не разбираться с сохранением асинхронных запросов
         ]
 
         for link in reviews_links:
@@ -105,6 +105,6 @@ class WildberriesSpider(scrapy.Spider):
             loader.add_value('wb_first_review_date', response.css('#Comments .comment')[0].css('.time::attr(content)').get())
 
         if re.compile('^.*order=Desc$').match(response.url):
-            loader.add_value('wb_first_review_date', response.css('#Comments .comment')[0].css('.time::attr(content)').get())
+            loader.add_value('wb_last_review_date', response.css('#Comments .comment')[0].css('.time::attr(content)').get())
 
         yield loader.load_item()
