@@ -6,9 +6,66 @@
 # https://docs.scrapy.org/en/latest/topics/items.html
 
 import scrapy
+from scrapy.loader.processors import MapCompose, TakeFirst
 
+
+def clear_price(text):
+    text = text.replace(u'\u00a0', '')
+
+    text = text.replace(u'\u20bd', '')
+
+    return text
 
 class WildsearchCrawlerItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
+    parse_date = scrapy.Field(
+        output_processor=TakeFirst()
+    )
+    marketplace = scrapy.Field(
+        output_processor=TakeFirst()
+    )
+    product_url = scrapy.Field(
+        output_processor=TakeFirst()
+    )
+    product_name = scrapy.Field(
+        input_processor=MapCompose(str.strip),
+        output_processor=TakeFirst()
+    )
+    image_urls = scrapy.Field()
+    wb_id = scrapy.Field(
+        input_processor=MapCompose(str.strip),
+        output_processor=TakeFirst()
+    )
+    wb_parent_id = scrapy.Field(
+        input_processor=MapCompose(str.strip),
+        output_processor=TakeFirst()
+    )
+    wb_reviews_count = scrapy.Field(
+        input_processor=MapCompose(str.strip),
+        output_processor=TakeFirst()
+    )
+    wb_purchases_count = scrapy.Field(
+        input_processor=MapCompose(str.strip),
+        output_processor=TakeFirst()
+    )
+    wb_price = scrapy.Field(
+        input_processor=MapCompose(str.strip, clear_price),
+        output_processor=TakeFirst()
+    )
+    wb_rating = scrapy.Field(
+        input_processor=MapCompose(str.strip),
+        output_processor=TakeFirst()
+    )
+    wb_brand_country = scrapy.Field(
+        input_processor=MapCompose(str.strip),
+        output_processor=TakeFirst()
+    )
+    wb_manufacture_country = scrapy.Field(
+        input_processor=MapCompose(str.strip),
+        output_processor=TakeFirst()
+    )
+    wb_first_review_date = scrapy.Field(
+        output_processor=TakeFirst()
+    )
+    wb_last_review_date = scrapy.Field(
+        output_processor=TakeFirst()
+    )
