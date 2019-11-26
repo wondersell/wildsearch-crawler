@@ -104,10 +104,17 @@ class WildberriesSpider(scrapy.Spider):
     def parse_good_review_date(self, response):
         loader = ItemLoader(item=response.meta['item'], response=response)
 
+        comment_blocks = response.css('#Comments .comment')
+
+        date_type = None
+
         if re.compile('^.*order=Asc$').match(response.url):
-            loader.add_value('wb_first_review_date', response.css('#Comments .comment')[0].css('.time::attr(content)').get())
+            date_type = 'wb_first_review_date'
 
         if re.compile('^.*order=Desc$').match(response.url):
-            loader.add_value('wb_last_review_date', response.css('#Comments .comment')[0].css('.time::attr(content)').get())
+            date_type = 'wb_last_review_date'
+
+        if len(comment_blocks) > 0 and date_type is not None:
+            loader.add_value(date_type, comment_blocks[0].css('.time::attr(content)').get())
 
         yield loader.load_item()
