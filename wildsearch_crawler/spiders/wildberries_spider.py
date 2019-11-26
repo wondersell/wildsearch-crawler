@@ -91,15 +91,15 @@ class WildberriesSpider(scrapy.Spider):
             # generate_reviews_link(response.url, 'Desc') Чтобы не разбираться с сохранением асинхронных запросов
         ]
 
-        for link in reviews_links:
-            yield response.follow(link, callback=self.parse_good_review_date, meta={'item': current_good_item})
+        # for link in reviews_links:
+        #     yield response.follow(link, callback=self.parse_good_review_date, meta={'item': current_good_item})
 
         # follow goods variants only if we scrap parent item
         if parent_item is None:
             for variant in (response.css('.options ul li a')):
                 yield response.follow(variant, callback=self.parse_good, meta={'parent_item': current_good_item})
 
-        loader.load_item()
+        yield loader.load_item()
 
     def parse_good_review_date(self, response):
         loader = ItemLoader(item=response.meta['item'], response=response)
