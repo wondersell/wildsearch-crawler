@@ -116,6 +116,6 @@ for level_1_item in soup.select('#submenu > ul'):
     # Записываем в табличку уровня 1
     level_1.append([top_categories[menu_id]['name'], top_categories[menu_id]['link']])
 
-save_csv('artifacts/level_1.csv', level_1)
-save_csv('artifacts/level_2.csv', level_2)
-save_csv('artifacts/level_3.csv', level_3)
+save_csv('artifacts/wb_categories_level_1.csv', level_1)
+save_csv('artifacts/wb_categories_level_2.csv', level_2)
+save_csv('artifacts/wb_categories_level_3.csv', level_3)
