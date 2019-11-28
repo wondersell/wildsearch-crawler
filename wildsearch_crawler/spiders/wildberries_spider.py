@@ -18,10 +18,21 @@ class WildberriesSpider(scrapy.Spider):
         if category_url is not None:
             yield scrapy.Request(category_url, self.parse_category)
 
+            return
+
         good_url = getattr(self, 'good_url', None)
 
         if good_url is not None:
             yield scrapy.Request(good_url, self.parse_good)
+
+            return
+
+        # default – start crawl from sitemap
+        yield scrapy.Request("https://www.wildberries.ru/services/karta-sayta", self.parse_sitemap)
+
+    def parse_sitemap(self, response):
+        for url in response.css('#sitemap a::attr(href)'):
+            yield response.follow(url, self.parse_category)
 
     def parse_category(self, response):
         # follow links to goods pages
