@@ -35,8 +35,8 @@ class WildberriesSpider(scrapy.Spider):
             yield response.follow(url, self.parse_category)
 
     def parse_category(self, response):
-        def generate_base_category_url(url):
-            return url.split('&')[0]
+        def clear_url_params(url):
+            return url.split('?')[0]
 
         per_page = int(response.css('.pageSizer .active::text').get())
         current_page = int(response.meta['current_page']) + 1 if 'current_page' in response.meta else 1
@@ -44,9 +44,9 @@ class WildberriesSpider(scrapy.Spider):
 
         # follow links to goods pages
         for good_url in response.css('a.ref_goods_n_p::attr(href)'):
-            yield response.follow(good_url, self.parse_good, meta={
+            yield response.follow(clear_url_params(good_url.get()), self.parse_good, meta={
                 'current_position': current_position,
-                'category_url': generate_base_category_url(response.url)
+                'category_url': clear_url_params(response.url)
             })
 
             current_position += 1
@@ -56,13 +56,13 @@ class WildberriesSpider(scrapy.Spider):
             yield response.follow(a, callback=self.parse_category, meta={'current_page': current_page})
 
     def parse_good(self, response):
+        def clear_url_params(url):
+            return url.split('?')[0]
+
         def generate_reviews_link(base_url, sort='Asc'):
             # at first it is like https://www.wildberries.ru/catalog/8685970/detail.aspx
             # must be like https://www.wildberries.ru/catalog/8685970/otzyvy?field=Date&order=Asc
             return re.sub('detail\.aspx.*$', 'otzyvy?field=Date&order=' + sort, base_url)
-
-        logging.info('skip_images option:')
-        logging.info(getattr(self, 'skip_images', False))
 
         skip_images = getattr(self, 'skip_images', False)
         skip_variants = getattr(self, 'skip_variants', False)
@@ -75,6 +75,16 @@ class WildberriesSpider(scrapy.Spider):
         # category position stats
         wb_category_url = response.meta['category_url'] if 'category_url' in response.meta else None
         wb_category_position = response.meta['current_position'] if 'current_position' in response.meta else None
+
+        canonical_url = response.css('link[rel=canonical]::attr(href)').get()
+
+        if canonical_url != response.url:
+            yield response.follow(clear_url_params(canonical_url), self.parse_good, meta={
+                'current_position': wb_category_position,
+                'category_url': wb_category_url
+            })
+
+            return
 
         # scraping brand and manufacturer countries
         wb_brand_country = ''
@@ -135,8 +145,10 @@ class WildberriesSpider(scrapy.Spider):
 
         # follow goods variants only if we scrap parent item
         if skip_variants is False and parent_item is None:
-            for variant in (response.css('.options ul li a')):
-                yield response.follow(variant, callback=self.parse_good, meta={'parent_item': current_good_item})
+            for variant in (response.css('.options ul li a::attr(href)')):
+                yield response.follow(clear_url_params(variant.get()), callback=self.parse_good, meta={
+                    'parent_item': current_good_item
+                })
 
         yield loader.load_item()
 
