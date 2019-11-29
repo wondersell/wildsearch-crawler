@@ -42,7 +42,6 @@ class WildberriesSpider(scrapy.Spider):
         current_page = int(response.meta['current_page']) + 1 if 'current_page' in response.meta else 1
         current_position = int(response.meta['current_page']) * per_page + 1 if 'current_page' in response.meta else 1
 
-
         # follow links to goods pages
         for good_url in response.css('a.ref_goods_n_p::attr(href)'):
             yield response.follow(good_url, self.parse_good, meta={
@@ -62,6 +61,12 @@ class WildberriesSpider(scrapy.Spider):
             # must be like https://www.wildberries.ru/catalog/8685970/otzyvy?field=Date&order=Asc
             return re.sub('detail\.aspx.*$', 'otzyvy?field=Date&order=' + sort, base_url)
 
+        logging.info('skip_images option:')
+        logging.info(getattr(self, 'skip_images', False))
+
+        skip_images = getattr(self, 'skip_images', False)
+        skip_variants = getattr(self, 'skip_variants', False)
+
         current_good_item = WildsearchCrawlerItem()
         parent_item = response.meta['parent_item'] if 'parent_item' in response.meta else None
 
@@ -70,12 +75,6 @@ class WildberriesSpider(scrapy.Spider):
         # category position stats
         wb_category_url = response.meta['category_url'] if 'category_url' in response.meta else None
         wb_category_position = response.meta['current_position'] if 'current_position' in response.meta else None
-
-        # create list of images
-        image_urls = []
-
-        for tm in (response.css('.pv-carousel .carousel a img::attr(src)')):
-            image_urls.append(tm.get().strip().replace('tm', 'big'))
 
         # scraping brand and manufacturer countries
         wb_brand_country = ''
@@ -102,11 +101,19 @@ class WildberriesSpider(scrapy.Spider):
         loader.add_value('parse_date', datetime.datetime.now().isoformat(" "))
         loader.add_value('marketplace', 'wildberries')
         loader.add_value('product_url', response.url)
-        loader.add_value('image_urls', image_urls)
         loader.add_value('wb_brand_country', wb_brand_country)
         loader.add_value('wb_manufacture_country', wb_manufacture_country)
         loader.add_value('wb_category_url', wb_category_url)
         loader.add_value('wb_category_position', wb_category_position)
+
+        # create list of images
+        if skip_images is False:
+            image_urls = []
+
+            for tm in (response.css('.pv-carousel .carousel a img::attr(src)')):
+                image_urls.append(tm.get().strip().replace('tm', 'big'))
+
+            loader.add_value('image_urls', image_urls)
 
         # fill purchase count
         # "ordersCount":1100,
@@ -115,17 +122,19 @@ class WildberriesSpider(scrapy.Spider):
         if parent_item is not None:
             loader.add_value('wb_parent_id', parent_item.get('wb_id', ''))
 
+        '''
         # get reviews dates
         reviews_links = [
             generate_reviews_link(response.url, 'Asc')
-            # generate_reviews_link(response.url, 'Desc') Чтобы не разбираться с сохранением асинхронных запросов
+            generate_reviews_link(response.url, 'Desc')  # Чтобы не разбираться с сохранением асинхронных запросов
         ]
 
-        # for link in reviews_links:
-        #     yield response.follow(link, callback=self.parse_good_review_date, meta={'item': current_good_item})
+        for link in reviews_links:
+            yield response.follow(link, callback=self.parse_good_review_date, meta={'item': current_good_item})
+        '''
 
         # follow goods variants only if we scrap parent item
-        if parent_item is None:
+        if skip_variants is False and parent_item is None:
             for variant in (response.css('.options ul li a')):
                 yield response.follow(variant, callback=self.parse_good, meta={'parent_item': current_good_item})
 
