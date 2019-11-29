@@ -35,13 +35,26 @@ class WildberriesSpider(scrapy.Spider):
             yield response.follow(url, self.parse_category)
 
     def parse_category(self, response):
+        def generate_base_category_url(url):
+            return url.split('&')[0]
+
+        per_page = int(response.css('.pageSizer .active::text').get())
+        current_page = int(response.meta['current_page']) + 1 if 'current_page' in response.meta else 1
+        current_position = int(response.meta['current_page']) * per_page + 1 if 'current_page' in response.meta else 1
+
+
         # follow links to goods pages
         for good_url in response.css('a.ref_goods_n_p::attr(href)'):
-            yield response.follow(good_url, self.parse_good)
+            yield response.follow(good_url, self.parse_good, meta={
+                'current_position': current_position,
+                'category_url': generate_base_category_url(response.url)
+            })
+
+            current_position += 1
 
         # follow pagination
         for a in response.css('.pager-bottom a.next'):
-            yield response.follow(a, callback=self.parse)
+            yield response.follow(a, callback=self.parse_category, meta={'current_page': current_page})
 
     def parse_good(self, response):
         def generate_reviews_link(base_url, sort='Asc'):
@@ -53,6 +66,10 @@ class WildberriesSpider(scrapy.Spider):
         parent_item = response.meta['parent_item'] if 'parent_item' in response.meta else None
 
         loader = ItemLoader(item=current_good_item, response=response)
+
+        # category position stats
+        wb_category_url = response.meta['category_url'] if 'category_url' in response.meta else None
+        wb_category_position = response.meta['current_position'] if 'current_position' in response.meta else None
 
         # create list of images
         image_urls = []
@@ -88,6 +105,8 @@ class WildberriesSpider(scrapy.Spider):
         loader.add_value('image_urls', image_urls)
         loader.add_value('wb_brand_country', wb_brand_country)
         loader.add_value('wb_manufacture_country', wb_manufacture_country)
+        loader.add_value('wb_category_url', wb_category_url)
+        loader.add_value('wb_category_position', wb_category_position)
 
         # fill purchase count
         # "ordersCount":1100,

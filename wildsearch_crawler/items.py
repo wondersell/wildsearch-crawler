@@ -39,6 +39,12 @@ class WildsearchCrawlerItem(scrapy.Item):
         input_processor=MapCompose(str.strip),
         output_processor=TakeFirst()
     )
+    wb_category_url = scrapy.Field(
+        output_processor=TakeFirst()
+    )
+    wb_category_position = scrapy.Field(
+        output_processor=TakeFirst()
+    )
     wb_reviews_count = scrapy.Field(
         input_processor=MapCompose(str.strip),
         output_processor=TakeFirst()
