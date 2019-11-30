@@ -42,9 +42,11 @@ class WildberriesSpider(scrapy.Spider):
         current_page = int(response.meta['current_page']) + 1 if 'current_page' in response.meta else 1
         current_position = int(response.meta['current_page']) * per_page + 1 if 'current_page' in response.meta else 1
 
+        allow_dupes = getattr(self, 'allow_dupes', False)
+
         # follow links to goods pages
         for good_url in response.css('a.ref_goods_n_p::attr(href)'):
-            yield response.follow(clear_url_params(good_url.get()), self.parse_good, meta={
+            yield response.follow(clear_url_params(good_url.get()), self.parse_good, dont_filter=allow_dupes, meta={
                 'current_position': current_position,
                 'category_url': clear_url_params(response.url)
             })
@@ -66,6 +68,7 @@ class WildberriesSpider(scrapy.Spider):
 
         skip_images = getattr(self, 'skip_images', False)
         skip_variants = getattr(self, 'skip_variants', False)
+        allow_dupes = getattr(self, 'allow_dupes', False)
 
         current_good_item = WildsearchCrawlerItem()
         parent_item = response.meta['parent_item'] if 'parent_item' in response.meta else None
@@ -79,7 +82,7 @@ class WildberriesSpider(scrapy.Spider):
         canonical_url = response.css('link[rel=canonical]::attr(href)').get()
 
         if canonical_url != response.url:
-            yield response.follow(clear_url_params(canonical_url), self.parse_good, meta={
+            yield response.follow(clear_url_params(canonical_url), self.parse_good, dont_filter=allow_dupes,  meta={
                 'current_position': wb_category_position,
                 'category_url': wb_category_url
             })
