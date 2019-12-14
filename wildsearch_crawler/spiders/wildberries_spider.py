@@ -6,7 +6,7 @@ import re
 import logging
 
 from scrapy.loader import ItemLoader
-from wildsearch_crawler.items import WildsearchCrawlerItem
+from wildsearch_crawler.items import WildsearchCrawlerItemWildberries
 
 
 class WildberriesSpider(scrapy.Spider):
@@ -70,7 +70,7 @@ class WildberriesSpider(scrapy.Spider):
         skip_variants = getattr(self, 'skip_variants', False)
         allow_dupes = getattr(self, 'allow_dupes', False)
 
-        current_good_item = WildsearchCrawlerItem()
+        current_good_item = WildsearchCrawlerItemWildberries()
         parent_item = response.meta['parent_item'] if 'parent_item' in response.meta else None
 
         loader = ItemLoader(item=current_good_item, response=response)
