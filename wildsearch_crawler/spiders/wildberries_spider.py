@@ -38,6 +38,9 @@ class WildberriesSpider(scrapy.Spider):
         def clear_url_params(url):
             return url.split('?')[0]
 
+        def parse_id_from_url(url):
+            return url.split('/')[4]
+
         per_page = int(response.css('.pageSizer .active::text').get())
         current_page = int(response.meta['current_page']) + 1 if 'current_page' in response.meta else 1
         wb_category_position = int(response.meta['current_page']) * per_page + 1 if 'current_page' in response.meta else 1
@@ -52,10 +55,10 @@ class WildberriesSpider(scrapy.Spider):
                 current_good_item = WildsearchCrawlerItemWildberries()
                 loader = ItemLoader(item=current_good_item, response=response)
 
-                loader.add_css('wb_id', 'div.article span::text')  # !!!!
+                loader.add_value('wb_id', parse_id_from_url(good_url.get()))
                 loader.add_value('parse_date', datetime.datetime.now().isoformat(" "))
                 loader.add_value('marketplace', 'wildberries')
-                loader.add_value('product_url', good_url)
+                loader.add_value('product_url', good_url.get())
                 loader.add_value('wb_category_url', wb_category_url)
                 loader.add_value('wb_category_position', wb_category_position)
 
