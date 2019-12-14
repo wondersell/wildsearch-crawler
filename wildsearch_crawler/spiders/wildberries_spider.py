@@ -40,18 +40,33 @@ class WildberriesSpider(scrapy.Spider):
 
         per_page = int(response.css('.pageSizer .active::text').get())
         current_page = int(response.meta['current_page']) + 1 if 'current_page' in response.meta else 1
-        current_position = int(response.meta['current_page']) * per_page + 1 if 'current_page' in response.meta else 1
+        wb_category_position = int(response.meta['current_page']) * per_page + 1 if 'current_page' in response.meta else 1
+        wb_category_url = clear_url_params(response.url)
 
         allow_dupes = getattr(self, 'allow_dupes', False)
+        skip_details = getattr(self, 'skip_details', False)
 
         # follow links to goods pages
         for good_url in response.css('a.ref_goods_n_p::attr(href)'):
-            yield response.follow(clear_url_params(good_url.get()), self.parse_good, dont_filter=allow_dupes, meta={
-                'current_position': current_position,
-                'category_url': clear_url_params(response.url)
-            })
+            if skip_details:
+                current_good_item = WildsearchCrawlerItemWildberries()
+                loader = ItemLoader(item=current_good_item, response=response)
 
-            current_position += 1
+                loader.add_css('wb_id', 'div.article span::text')  # !!!!
+                loader.add_value('parse_date', datetime.datetime.now().isoformat(" "))
+                loader.add_value('marketplace', 'wildberries')
+                loader.add_value('product_url', good_url)
+                loader.add_value('wb_category_url', wb_category_url)
+                loader.add_value('wb_category_position', wb_category_position)
+
+                yield loader.load_item()
+            else:
+                yield response.follow(clear_url_params(good_url.get()), self.parse_good, dont_filter=allow_dupes, meta={
+                    'current_position': wb_category_position,
+                    'category_url': wb_category_url
+                })
+
+            wb_category_position += 1
 
         # follow pagination
         for a in response.css('.pager-bottom a.next'):

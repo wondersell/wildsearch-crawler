@@ -16,6 +16,7 @@ def clear_price(text):
 
     return text
 
+
 class WildsearchCrawlerItemWildberries(scrapy.Item):
     parse_date = scrapy.Field(
         output_processor=TakeFirst()
@@ -75,6 +76,7 @@ class WildsearchCrawlerItemWildberries(scrapy.Item):
     wb_last_review_date = scrapy.Field(
         output_processor=TakeFirst()
     )
+
 
 class WildsearchCrawlerItemOzon(scrapy.Item):
     parse_date = scrapy.Field(
