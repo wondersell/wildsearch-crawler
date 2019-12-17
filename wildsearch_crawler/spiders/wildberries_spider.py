@@ -41,9 +41,7 @@ class WildberriesSpider(scrapy.Spider):
         def parse_id_from_url(url):
             return url.split('/')[4]
 
-        per_page = int(response.css('.pageSizer .active::text').get())
-        current_page = int(response.meta['current_page']) + 1 if 'current_page' in response.meta else 1
-        wb_category_position = int(response.meta['current_page']) * per_page + 1 if 'current_page' in response.meta else 1
+        wb_category_position = int(response.meta['current_position']) if 'current_position' in response.meta else 1
         wb_category_url = clear_url_params(response.url)
 
         allow_dupes = getattr(self, 'allow_dupes', False)
@@ -73,7 +71,7 @@ class WildberriesSpider(scrapy.Spider):
 
         # follow pagination
         for a in response.css('.pager-bottom a.next'):
-            yield response.follow(a, callback=self.parse_category, meta={'current_page': current_page})
+            yield response.follow(a, callback=self.parse_category, meta={'current_position': wb_category_position})
 
     def parse_good(self, response):
         def clear_url_params(url):
