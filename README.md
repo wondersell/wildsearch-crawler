@@ -1,6 +1,6 @@
 # WildSearch crawler
 
-Инструмент сбора данных а разделах, товарах и позициях товаров в разделах сайта [Wildberries](https://www.wildberries.ru/)
+Инструмент сбора данных о разделах, товарах и позициях товаров в разделах сайта [Wildberries](https://www.wildberries.ru/)
 
 ## Установка
 
