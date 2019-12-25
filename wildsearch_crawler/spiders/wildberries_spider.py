@@ -48,15 +48,18 @@ class WildberriesSpider(scrapy.Spider):
         skip_details = getattr(self, 'skip_details', False)
 
         # follow links to goods pages
-        for good_url in response.css('a.ref_goods_n_p::attr(href)'):
+        for item in response.css('.catalog-content .j-card-item'):
+            good_url = item.css('a.ref_goods_n_p::attr(href)')
+
             if skip_details:
                 current_good_item = WildsearchCrawlerItemWildberries()
                 loader = ItemLoader(item=current_good_item, response=response)
 
                 loader.add_value('wb_id', parse_id_from_url(good_url.get()))
+                loader.add_value('product_name', item.css('.goods-name::text').get())
                 loader.add_value('parse_date', datetime.datetime.now().isoformat(" "))
                 loader.add_value('marketplace', 'wildberries')
-                loader.add_value('product_url', good_url.get())
+                loader.add_value('product_url', clear_url_params(good_url.get()))
                 loader.add_value('wb_category_url', wb_category_url)
                 loader.add_value('wb_category_position', wb_category_position)
 
