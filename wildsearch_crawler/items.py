@@ -62,6 +62,13 @@ class WildsearchCrawlerItemWildberries(scrapy.Item):
         input_processor=MapCompose(str.strip),
         output_processor=TakeFirst()
     )
+    wb_brand_name = scrapy.Field(
+        input_processor=MapCompose(str.strip),
+        output_processor=TakeFirst()
+    )
+    wb_brand_url = scrapy.Field(
+        output_processor=TakeFirst()
+    )
     wb_brand_country = scrapy.Field(
         input_processor=MapCompose(str.strip),
         output_processor=TakeFirst()

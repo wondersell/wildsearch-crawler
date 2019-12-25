@@ -62,6 +62,7 @@ class WildberriesSpider(scrapy.Spider):
                 loader.add_value('product_url', clear_url_params(good_url.get()))
                 loader.add_value('wb_category_url', wb_category_url)
                 loader.add_value('wb_category_position', wb_category_position)
+                loader.add_value('wb_brand_name', item.css('.brand-name::text').get())
 
                 yield loader.load_item()
             else:
@@ -133,6 +134,8 @@ class WildberriesSpider(scrapy.Spider):
         loader.add_value('parse_date', datetime.datetime.now().isoformat(" "))
         loader.add_value('marketplace', 'wildberries')
         loader.add_value('product_url', response.url)
+        loader.add_value('wb_brand_name', response.css('.brand-and-name .brand::text').get())
+        loader.add_value('wb_brand_url', response.css('.brandBannerImgRef::attr(href)').get())
         loader.add_value('wb_brand_country', wb_brand_country)
         loader.add_value('wb_manufacture_country', wb_manufacture_country)
         loader.add_value('wb_category_url', wb_category_url)
