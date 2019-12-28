@@ -84,6 +84,22 @@ class WildsearchCrawlerItemWildberries(scrapy.Item):
         output_processor=TakeFirst()
     )
 
+class WildsearchCrawlerItemWildberriesCategory(scrapy.Item):
+    parse_date = scrapy.Field(
+        output_processor=TakeFirst()
+    )
+    marketplace = scrapy.Field(
+        output_processor=TakeFirst()
+    )
+    wb_category_name = scrapy.Field(
+        output_processor=TakeFirst()
+    )
+    wb_category_url = scrapy.Field(
+        output_processor=TakeFirst()
+    )
+    wb_category_level = scrapy.Field(
+        output_processor=TakeFirst()
+    )
 
 class WildsearchCrawlerItemOzon(scrapy.Item):
     parse_date = scrapy.Field(
