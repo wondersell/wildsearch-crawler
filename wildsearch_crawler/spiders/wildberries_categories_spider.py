@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import datetime
+
 import scrapy
 import re
 import logging
+import requests
+import urllib.parse
 
 from scrapy.loader import ItemLoader
 from wildsearch_crawler.items import WildsearchCrawlerItemWildberriesCategory
@@ -25,3 +28,9 @@ class WildberriesCategoriesSpider(scrapy.Spider):
             loader.add_value('wb_category_level', None)
 
             yield loader.load_item()
+
+    def closed(self, reason):
+        callback_url = getattr(self, 'callback_url', None)
+
+        if callback_url is not None:
+            requests.post(callback_url)
