@@ -2,8 +2,8 @@
 
 import datetime
 import scrapy
+import requests
 import re
-import logging
 
 from scrapy.loader import ItemLoader
 from wildsearch_crawler.items import WildsearchCrawlerItemWildberries
@@ -29,6 +29,9 @@ class WildberriesSpider(scrapy.Spider):
 
         # default – start crawl from sitemap
         yield scrapy.Request("https://www.wildberries.ru/services/karta-sayta", self.parse_sitemap)
+
+    def parse(self, response):
+        pass
 
     def parse_sitemap(self, response):
         for url in response.css('#sitemap a::attr(href)'):
@@ -194,3 +197,14 @@ class WildberriesSpider(scrapy.Spider):
             loader.add_value(date_type, comment_blocks[0].css('.time::attr(content)').get())
 
         yield loader.load_item()
+
+    def closed(self, reason):
+        callback_url = getattr(self, 'callback_url', None)
+        callback_params = {}
+
+        for element in getattr(self, 'callback_params', None).split('&'):
+            k_v = element.split('=')
+            callback_params[k_v[0]] = callback_params[k_v[1]]
+
+        if callback_url is not None:
+            requests.post(callback_url, data=callback_params)
