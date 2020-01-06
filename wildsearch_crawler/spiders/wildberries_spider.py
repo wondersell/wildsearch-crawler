@@ -1,12 +1,19 @@
 # -*- coding: utf-8 -*-
 
 import datetime
+import logging
 import scrapy
 import requests
 import re
 
 from scrapy.loader import ItemLoader
 from wildsearch_crawler.items import WildsearchCrawlerItemWildberries
+
+# включаем логи
+logging.basicConfig(format='[%(asctime)s][%(levelname)s] %(message)s',
+                    level=logging.INFO)
+
+logger = logging.getLogger(__name__)
 
 
 class WildberriesSpider(scrapy.Spider):
@@ -207,4 +214,5 @@ class WildberriesSpider(scrapy.Spider):
             callback_params[k_v[0]] = callback_params[k_v[1]]
 
         if callback_url is not None:
+            logger.info(f"Noticed callback_url in params, sending POST request to {callback_url}")
             requests.post(callback_url, data=callback_params)
