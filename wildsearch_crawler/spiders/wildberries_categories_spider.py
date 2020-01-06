@@ -31,7 +31,7 @@ class WildberriesCategoriesSpider(scrapy.Spider):
 
         for element in getattr(self, 'callback_params', None).split('&'):
             k_v = element.split('=')
-            callback_params[k_v[0]] = callback_params[k_v[1]]
+            callback_params[str(k_v[0])] = k_v[1]
 
         if callback_url is not None:
             logger.info(f"Noticed callback_url in params, sending POST request to {callback_url}")
