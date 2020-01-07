@@ -27,11 +27,13 @@ class WildberriesCategoriesSpider(scrapy.Spider):
 
     def closed(self, reason):
         callback_url = getattr(self, 'callback_url', None)
+        callback_params_raw = getattr(self, 'callback_params', None)
         callback_params = {}
 
-        for element in getattr(self, 'callback_params', None).split('&'):
-            k_v = element.split('=')
-            callback_params[str(k_v[0])] = k_v[1]
+        if callback_params_raw is not None:
+            for element in callback_params_raw.split('&'):
+                k_v = element.split('=')
+                callback_params[str(k_v[0])] = k_v[1]
 
         if callback_url is not None:
             logger.info(f"Noticed callback_url in params, sending POST request to {callback_url}")
