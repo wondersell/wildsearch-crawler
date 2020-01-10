@@ -5,6 +5,9 @@ import logging
 import scrapy
 import requests
 
+from urllib.parse import urlparse, urljoin
+
+
 # включаем логи
 logging.basicConfig(format='[%(asctime)s][%(levelname)s] %(message)s',
                     level=logging.INFO)
@@ -17,12 +20,17 @@ class WildberriesCategoriesSpider(scrapy.Spider):
     start_urls = ['https://www.wildberries.ru/services/karta-sayta']
 
     def parse(self, response):
+        start_url_parsed = urlparse(response.request.url)
+
         for url in response.css('#sitemap a'):
+            url_parsed = urlparse(url.attrib['href'])
+            full_url = urljoin(start_url_parsed.scheme + '://' + start_url_parsed.netloc, url_parsed.path)
+
             yield {
                 'parse_date': datetime.datetime.now().isoformat(" "),
                 'marketplace': 'wildberries',
                 'wb_category_name': url.css('::text').get(),
-                'wb_category_url': url.attrib['href']
+                'wb_category_url': full_url
             }
 
     def closed(self, reason):
