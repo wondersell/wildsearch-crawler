@@ -16,7 +16,7 @@ NEWSPIDER_MODULE = 'wildsearch_crawler.spiders'
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-#USER_AGENT = 'wildsearch_crawler (+http://www.yourdomain.com)'
+#USER_AGENT = 'PostmanRuntime/7.21.0'
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
