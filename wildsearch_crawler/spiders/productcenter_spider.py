@@ -2,6 +2,7 @@ import scrapy
 import logging
 import datetime
 import requests
+import re
 
 from scrapy.loader import ItemLoader
 from wildsearch_crawler.items import WildsearchCrawlerItemProductcenterProducer
@@ -98,6 +99,7 @@ class ProductcenterProducersSpider(scrapy.Spider):
         loader.add_value('producer_url', response.url)
         loader.add_value('producer_address', get_address())
         loader.add_value('producer_logo', add_domain_to_url(response.css('a.fancybox[data-fancybox-group="producer"]::attr(href)').get()))
+        loader.add_value('producer_coords', re.compile('coordinates: \[(\d+\.\d+, \d+\.\d+)]').search(response.text)[1])
         loader.add_value('producer_goods_count', '')
         loader.add_value('producer_rating', '')
 
