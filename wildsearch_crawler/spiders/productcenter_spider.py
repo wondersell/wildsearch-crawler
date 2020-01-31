@@ -51,12 +51,12 @@ class ProductcenterProducersSpider(scrapy.Spider):
         category_name = response.css('h1')
 
         for producer_card in response.css('#content .items .item'):
-            producer_goods_count = producer_card.css('a.no-ico::text').get()
+            producer_goods_count = producer_card.css('a[title="Все товары производителя"]::text').get()
 
             yield response.follow(producer_card.css('a.link'), callback=self.parse_producer, meta={
                 'category_url': category_url,
                 'category_name': category_name,
-                'producer_goods_count': producer_goods_count,
+                'producer_goods_count': producer_goods_count
             })
 
         # follow pagination
