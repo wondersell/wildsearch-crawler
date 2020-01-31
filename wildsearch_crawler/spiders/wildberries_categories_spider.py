@@ -1,16 +1,9 @@
-# -*- coding: utf-8 -*-
-
 import datetime
 import logging
 import scrapy
 import requests
 
 from urllib.parse import urlparse, urljoin
-
-
-# включаем логи
-logging.basicConfig(format='[%(asctime)s][%(levelname)s] %(message)s',
-                    level=logging.INFO)
 
 logger = logging.getLogger(__name__)
 

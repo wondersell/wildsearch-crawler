@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import datetime
 import logging
 import scrapy
@@ -8,10 +6,6 @@ import re
 
 from scrapy.loader import ItemLoader
 from wildsearch_crawler.items import WildsearchCrawlerItemWildberries
-
-# включаем логи
-logging.basicConfig(format='[%(asctime)s][%(levelname)s] %(message)s',
-                    level=logging.INFO)
 
 logger = logging.getLogger(__name__)
 
