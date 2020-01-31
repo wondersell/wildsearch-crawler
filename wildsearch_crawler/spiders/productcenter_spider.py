@@ -41,7 +41,7 @@ class ProductcenterProducersSpider(scrapy.Spider):
             return url
 
         for url in response.css('.hcm_producers li a'):
-            yield response.follow(add_region_to_url(url), self.parse_category)
+            yield response.follow(add_region_to_url(url.attrib['href']), self.parse_category)
 
     def parse_category(self, response):
         def clear_url_params(url):
