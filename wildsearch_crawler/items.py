@@ -177,6 +177,9 @@ class WildsearchCrawlerItemProductcenterProducer(scrapy.Item):
     producer_coords = scrapy.Field(
         output_processor=TakeFirst()
     )
+    producer_distance = scrapy.Field(
+        output_processor=TakeFirst()
+    )
     producer_phone = scrapy.Field(
         output_processor=TakeFirst()
     )

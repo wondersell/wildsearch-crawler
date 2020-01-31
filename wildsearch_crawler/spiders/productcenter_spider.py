@@ -3,6 +3,7 @@ import logging
 import datetime
 import requests
 import re
+import geopy.distance
 
 from scrapy.loader import ItemLoader
 from wildsearch_crawler.items import WildsearchCrawlerItemProductcenterProducer
@@ -32,7 +33,7 @@ class ProductcenterProducersSpider(scrapy.Spider):
 
     def parse_front(self, response):
         def add_region_to_url(url):
-            region_filter = getattr(self, 'only_region', False)
+            region_filter = getattr(self, 'only_region', None)
 
             if region_filter is not None and region_filter not in url:
                 url = url.replace('/producers', '/producers/' + region_filter)
@@ -72,6 +73,10 @@ class ProductcenterProducersSpider(scrapy.Spider):
             url_parsed = urlparse(url)
             return urljoin(start_url_parsed.scheme + '://' + start_url_parsed.netloc, url_parsed.path)
 
+        def prepare_coords(coords_str):
+            coords_str = coords_str.replace(' ', '')
+            return map(float, coords_str.split(','))
+
         current_producer_item = WildsearchCrawlerItemProductcenterProducer()
 
         loader = ItemLoader(item=current_producer_item, response=response)
@@ -99,7 +104,6 @@ class ProductcenterProducersSpider(scrapy.Spider):
         loader.add_value('producer_url', response.url)
         loader.add_value('producer_address', get_address())
         loader.add_value('producer_logo', add_domain_to_url(response.css('a.fancybox[data-fancybox-group="producer"]::attr(href)').get()))
-        loader.add_value('producer_coords', re.compile('coordinates: \[(\d+\.\d+, \d+\.\d+)]').search(response.text)[1])
         loader.add_value('producer_goods_count', '')
         loader.add_value('producer_rating', '')
 
@@ -109,6 +113,16 @@ class ProductcenterProducersSpider(scrapy.Spider):
             producer_price_lists.append(add_domain_to_url(price_list_url.attrib['href']))
 
         loader.add_value('producer_price_lists', producer_price_lists)
+
+        coords_producer = re.compile('coordinates: \[(\d+\.\d+, \d+\.\d+)]').search(response.text)[1]
+        loader.add_value('producer_coords', coords_producer)
+
+        coords_office = getattr(self, 'office_coords', None)
+
+        if coords_office is not None:
+            coords_office = prepare_coords(coords_office)
+            coords_producer = prepare_coords(coords_producer)
+            loader.add_value('producer_distance', round(geopy.distance.vincenty(coords_office, coords_producer).km, 2))
 
         yield loader.load_item()
 
