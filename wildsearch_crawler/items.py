@@ -148,3 +148,48 @@ class WildsearchCrawlerItemOzon(scrapy.Item):
     ozon_last_review_date = scrapy.Field(
         output_processor=TakeFirst()
     )
+
+class WildsearchCrawlerItemProductcenterProducer(scrapy.Item):
+    parse_date = scrapy.Field(
+        output_processor=TakeFirst()
+    )
+    marketplace = scrapy.Field(
+        output_processor=TakeFirst()
+    )
+    category_url = scrapy.Field(
+        output_processor=TakeFirst()
+    )
+    category_name = scrapy.Field(
+        output_processor=TakeFirst()
+    )
+    producer_url = scrapy.Field(
+        output_processor=TakeFirst()
+    )
+    producer_name = scrapy.Field(
+        output_processor=TakeFirst()
+    )
+    producer_about = scrapy.Field(
+        output_processor=TakeFirst()
+    )
+    producer_address = scrapy.Field(
+        output_processor=TakeFirst()
+    )
+    producer_phone = scrapy.Field(
+        output_processor=TakeFirst()
+    )
+    producer_email = scrapy.Field(
+        output_processor=TakeFirst()
+    )
+    producer_website = scrapy.Field(
+        output_processor=TakeFirst()
+    )
+    producer_goods_count = scrapy.Field(
+        output_processor=TakeFirst()
+    )
+    producer_logo = scrapy.Field(
+        output_processor=TakeFirst()
+    )
+    producer_rating = scrapy.Field(
+        output_processor=TakeFirst()
+    )
+    producer_price_lists = scrapy.Field()
