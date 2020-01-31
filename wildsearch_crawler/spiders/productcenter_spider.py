@@ -47,14 +47,23 @@ class ProductcenterProducersSpider(scrapy.Spider):
         def clear_url_params(url):
             return url.split('?')[0]
 
-        category_url = clear_url_params(response.url)
+        category_url = response.meta['category_url'] if 'category_url' in response.meta else clear_url_params(response.url)
         category_name = response.css('h1')
+
+        for producer_card in response.css('#content .items .item'):
+            producer_goods_count = producer_card.css('a.no-ico::text').get()
+
+            yield response.follow(producer_card.css('a.link'), callback=self.parse_producer, meta={
+                'category_url': category_url,
+                'category_name': category_name,
+                'producer_goods_count': producer_goods_count,
+            })
 
         # follow pagination
         for a in response.css('.page_links a:last-child'):
             yield response.follow(a, callback=self.parse_category, meta={
                     'category_url': category_url,
-                    'category_name': category_name,
+                    'category_name': category_name
                 })
 
     def parse_producer(self, response):
@@ -83,6 +92,7 @@ class ProductcenterProducersSpider(scrapy.Spider):
 
         category_url = response.meta['category_url'] if 'category_url' in response.meta else None
         category_name = response.meta['category_name'] if 'category_name' in response.meta else None
+        producer_goods_count = response.meta['producer_goods_count'] if 'producer_goods_count' in response.meta else None
 
         canonical_url = response.css('link[rel=canonical]::attr(href)').get()
 
@@ -104,7 +114,7 @@ class ProductcenterProducersSpider(scrapy.Spider):
         loader.add_value('producer_url', response.url)
         loader.add_value('producer_address', get_address())
         loader.add_value('producer_logo', add_domain_to_url(response.css('a.fancybox[data-fancybox-group="producer"]::attr(href)').get()))
-        loader.add_value('producer_goods_count', '')
+        loader.add_value('producer_goods_count', producer_goods_count)
         loader.add_value('producer_rating', '')
 
         producer_price_lists = []
