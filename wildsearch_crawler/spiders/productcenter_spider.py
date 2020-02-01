@@ -40,15 +40,21 @@ class ProductcenterProducersSpider(scrapy.Spider):
 
             return url
 
-        for url in response.css('.hcm_producers li a'):
-            yield response.follow(add_region_to_url(url.attrib['href']), self.parse_category)
+        for menu_item in response.css('.hcm_producers li ul li'):
+            category_url = add_region_to_url(menu_item.css('a:nth-of-type(1)::attr(href)').get())
+            category_name = menu_item.css('a:nth-of-type(1)::text').get()
+
+            yield response.follow(category_url, callback=self.parse_category, meta={
+                'category_url': category_url,
+                'category_name': category_name,
+            })
 
     def parse_category(self, response):
         def clear_url_params(url):
             return url.split('?')[0]
 
         category_url = response.meta['category_url'] if 'category_url' in response.meta else clear_url_params(response.url)
-        category_name = response.css('h1::text').get()
+        category_name = response.meta['category_name'] if 'category_name' in response.meta else response.css('h1::text').get()
 
         for producer_card in response.css('#content .items .item'):
             yield response.follow(producer_card.css('a.link:nth-of-type(1)::attr(href)').get(), callback=self.parse_producer, meta={
