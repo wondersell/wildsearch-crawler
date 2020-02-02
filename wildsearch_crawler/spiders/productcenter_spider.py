@@ -31,6 +31,9 @@ class ProductcenterProducersSpider(BaseSpider):
         # default – start crawl from front page
         yield scrapy.Request("https://productcenter.ru", self.parse_front)
 
+    def parse(self, response):
+        pass
+
     def parse_front(self, response):
         def add_region_to_url(url):
             region_filter = getattr(self, 'only_region', None)
