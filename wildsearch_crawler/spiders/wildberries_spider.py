@@ -1,16 +1,16 @@
 import datetime
 import logging
 import scrapy
-import requests
 import re
 
+from .base_spider import BaseSpider
 from scrapy.loader import ItemLoader
 from wildsearch_crawler.items import WildsearchCrawlerItemWildberries
 
 logger = logging.getLogger(__name__)
 
 
-class WildberriesSpider(scrapy.Spider):
+class WildberriesSpider(BaseSpider):
     name = "wb"
 
     def start_requests(self):
@@ -198,17 +198,3 @@ class WildberriesSpider(scrapy.Spider):
             loader.add_value(date_type, comment_blocks[0].css('.time::attr(content)').get())
 
         yield loader.load_item()
-
-    def closed(self, reason):
-        callback_url = getattr(self, 'callback_url', None)
-        callback_params_raw = getattr(self, 'callback_params', None)
-        callback_params = {}
-
-        if callback_params_raw is not None:
-            for element in callback_params_raw.split('&'):
-                k_v = element.split('=')
-                callback_params[str(k_v[0])] = k_v[1]
-
-        if callback_url is not None:
-            logger.info(f"Noticed callback_url in params, sending POST request to {callback_url}")
-            requests.post(callback_url, data=callback_params)
