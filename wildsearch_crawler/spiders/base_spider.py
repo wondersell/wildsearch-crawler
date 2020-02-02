@@ -1,6 +1,7 @@
 import scrapy
 import logging
 import requests
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -9,7 +10,9 @@ class BaseSpider(scrapy.Spider):
     def closed(self, reason):
         callback_url = getattr(self, 'callback_url', None)
         callback_params_raw = getattr(self, 'callback_params', None)
-        callback_params = {}
+        callback_params = {
+            'job_id': os.environ['SCRAPY_JOB']
+        }
 
         if callback_params_raw is not None:
             for element in callback_params_raw.split('&'):
