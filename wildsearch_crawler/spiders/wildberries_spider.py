@@ -47,6 +47,7 @@ class WildberriesSpider(BaseSpider):
 
         wb_category_position = int(response.meta['current_position']) if 'current_position' in response.meta else 1
         wb_category_url = clear_url_params(response.url)
+        wb_category_name = response.css('h1::text').get()
 
         allow_dupes = getattr(self, 'allow_dupes', False)
         skip_details = getattr(self, 'skip_details', False)
@@ -72,7 +73,8 @@ class WildberriesSpider(BaseSpider):
             else:
                 yield response.follow(clear_url_params(good_url.get()), self.parse_good, dont_filter=allow_dupes, meta={
                     'current_position': wb_category_position,
-                    'category_url': wb_category_url
+                    'category_url': wb_category_url,
+                    'category_name': wb_category_name
                 })
 
             wb_category_position += 1
@@ -101,6 +103,7 @@ class WildberriesSpider(BaseSpider):
 
         # category position stats
         wb_category_url = response.meta['category_url'] if 'category_url' in response.meta else None
+        wb_category_name = response.meta['category_name'] if 'category_name' in response.meta else None
         wb_category_position = response.meta['current_position'] if 'current_position' in response.meta else None
 
         canonical_url = response.css('link[rel=canonical]::attr(href)').get()
@@ -143,6 +146,7 @@ class WildberriesSpider(BaseSpider):
         loader.add_value('wb_brand_country', wb_brand_country)
         loader.add_value('wb_manufacture_country', wb_manufacture_country)
         loader.add_value('wb_category_url', wb_category_url)
+        loader.add_value('wb_category_name', wb_category_name)
         loader.add_value('wb_category_position', wb_category_position)
 
         # create list of images

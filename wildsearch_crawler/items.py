@@ -43,6 +43,9 @@ class WildsearchCrawlerItemWildberries(scrapy.Item):
     wb_category_url = scrapy.Field(
         output_processor=TakeFirst()
     )
+    wb_category_name = scrapy.Field(
+        output_processor=TakeFirst()
+    )
     wb_category_position = scrapy.Field(
         output_processor=TakeFirst()
     )
