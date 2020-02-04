@@ -90,7 +90,9 @@ class WildberriesSpider(BaseSpider):
         def generate_reviews_link(base_url, sort='Asc'):
             # at first it is like https://www.wildberries.ru/catalog/8685970/detail.aspx
             # must be like https://www.wildberries.ru/catalog/8685970/otzyvy?field=Date&order=Asc
-            return re.sub('detail\.aspx.*$', 'otzyvy?field=Date&order=' + sort, base_url)
+            link_param = response.css('#Comments a.show-more::attr(data-link)').get()
+
+            return re.sub('detail\.aspx.*$', f'otzyvy?field=Date&order={sort}&link={link_param}', base_url)
 
         skip_images = getattr(self, 'skip_images', False)
         skip_variants = getattr(self, 'skip_variants', False)
@@ -165,16 +167,8 @@ class WildberriesSpider(BaseSpider):
         if parent_item is not None:
             loader.add_value('wb_parent_id', parent_item.get('wb_id', ''))
 
-        '''
         # get reviews dates
-        reviews_links = [
-            generate_reviews_link(response.url, 'Asc')
-            generate_reviews_link(response.url, 'Desc')  # Чтобы не разбираться с сохранением асинхронных запросов
-        ]
-
-        for link in reviews_links:
-            yield response.follow(link, callback=self.parse_good_review_date, meta={'item': current_good_item})
-        '''
+        yield response.follow(generate_reviews_link(response.url, 'Asc'), callback=self.parse_good_first_review_date, errback=self.parse_good_errback, meta={'loader': loader}, headers={'x-requested-with': 'XMLHttpRequest'})
 
         # follow goods variants only if we scrap parent item
         if skip_variants is False and parent_item is None:
@@ -183,22 +177,11 @@ class WildberriesSpider(BaseSpider):
                     'parent_item': current_good_item
                 })
 
-        yield loader.load_item()
+    def parse_good_first_review_date(self, response):
+        if len(response.css('.comment')) > 0:
+            response.meta['loader'].add_value('wb_first_review_date', response.css('.comment')[0].css('.time::attr(content)').get())
 
-    def parse_good_review_date(self, response):
-        loader = ItemLoader(item=response.meta['item'], response=response)
+        yield response.meta['loader'].load_item()
 
-        comment_blocks = response.css('#Comments .comment')
-
-        date_type = None
-
-        if re.compile('^.*order=Asc$').match(response.url):
-            date_type = 'wb_first_review_date'
-
-        if re.compile('^.*order=Desc$').match(response.url):
-            date_type = 'wb_last_review_date'
-
-        if len(comment_blocks) > 0 and date_type is not None:
-            loader.add_value(date_type, comment_blocks[0].css('.time::attr(content)').get())
-
-        yield loader.load_item()
+    def parse_good_errback(self, response):
+        yield response.meta['loader'].load_item()
