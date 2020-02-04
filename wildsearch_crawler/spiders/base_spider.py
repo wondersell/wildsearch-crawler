@@ -1,7 +1,7 @@
 import scrapy
 import logging
 import requests
-import os
+from envparse import env
 
 logger = logging.getLogger(__name__)
 
@@ -11,7 +11,7 @@ class BaseSpider(scrapy.Spider):
         callback_url = getattr(self, 'callback_url', None)
         callback_params_raw = getattr(self, 'callback_params', None)
         callback_params = {
-            'job_id': os.environ['SCRAPY_JOB']
+            'job_id': env('SCRAPY_JOB', default=0)
         }
 
         if callback_params_raw is not None:
