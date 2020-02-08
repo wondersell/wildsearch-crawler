@@ -57,6 +57,8 @@ class WildberriesSpider(BaseSpider):
             good_url = item.css('a.ref_goods_n_p::attr(href)')
 
             if skip_details:
+                # ItemLoader выключен в угоду скорости
+                '''
                 current_good_item = WildsearchCrawlerItemWildberries()
                 loader = ItemLoader(item=current_good_item, response=response)
 
@@ -70,6 +72,18 @@ class WildberriesSpider(BaseSpider):
                 loader.add_value('wb_brand_name', item.css('.brand-name::text').get())
 
                 yield loader.load_item()
+                '''
+
+                yield {
+                    'wb_id': datetime.datetime.now().isoformat(" "),
+                    'product_name': item.css('.goods-name::text').get(),
+                    'parse_date': datetime.datetime.now().isoformat(" "),
+                    'marketplace': 'wildberries',
+                    'product_url': clear_url_params(good_url.get()),
+                    'wb_category_url': wb_category_url,
+                    'wb_category_position': wb_category_position,
+                    'wb_brand_name': item.css('.brand-name::text').get()
+                }
             else:
                 yield response.follow(clear_url_params(good_url.get()), self.parse_good, dont_filter=allow_dupes, meta={
                     'current_position': wb_category_position,
