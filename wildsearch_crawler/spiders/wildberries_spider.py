@@ -174,7 +174,7 @@ class WildberriesSpider(BaseSpider):
 
             loader.add_value('image_urls', image_urls)
 
-        # fill purchase count
+        # fill purchase count in inline json
         # "ordersCount":1100,
         loader.add_value('wb_purchases_count', re.compile('"ordersCount":(\d+),').search(response.text)[1])
 
