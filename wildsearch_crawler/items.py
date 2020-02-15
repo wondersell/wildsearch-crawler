@@ -126,6 +126,9 @@ class WildsearchCrawlerItemOzon(scrapy.Item):
     ozon_category_url = scrapy.Field(
         output_processor=TakeFirst()
     )
+    ozon_category_name = scrapy.Field(
+        output_processor=TakeFirst()
+    )
     ozon_category_position = scrapy.Field(
         output_processor=TakeFirst()
     )
