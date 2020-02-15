@@ -38,6 +38,15 @@
 - `-a allow_dupes=true` – отключает фильтр дупликатов страниц, чтобы сохранять каждый встреченный товар, даже если он уже был скачан
 - `-a skip_details=true` – проходится только по каталогу, не заходя в карточки товаров. Выгрузка получается сокращенная (только позиции)
 
+### ozon – универсальный скрапер Ozon
+
+Скрапер называется `ozon`, запускается в следующих режимах:
+
+- Анализ категории: `scrapy crawl ozon -o artifacts/ozon.json -a category_url="https://www.ozon.ru/category/aksessuary-dlya-audiotehniki-15607/"`
+- Анализ товара со всеми вариациями `scrapy crawl ozon -o artifacts/ozon.json -a good_url="https://www.ozon.ru/context/detail/id/151480118/"`
+
+В обоих случаях он сохранит результаты в файл `artifacts/ozon.json` благодаря опции -o.
+
 ### wb_categories – скрапер активных категорий Wildberries
 
 Скрапер называется `wb_categories` и осуществляет сбор доступных на карте сайта категорий. Запускается без параметров.
