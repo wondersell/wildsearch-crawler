@@ -77,12 +77,15 @@ class WildberriesSpider(BaseSpider):
                 yield {
                     'wb_id': datetime.datetime.now().isoformat(" "),
                     'product_name': item.css('.goods-name::text').get(),
+                    'wb_reviews_count': item.css('.dtList-comments-count::text').get(),
+                    'wb_price': item.css('.lower-price::text').get().replace(u'\u20bd', '').replace(u'\u00a0', ''),
                     'parse_date': datetime.datetime.now().isoformat(" "),
                     'marketplace': 'wildberries',
                     'product_url': clear_url_params(good_url.get()),
                     'wb_category_url': wb_category_url,
+                    'wb_category_name': wb_category_name,
                     'wb_category_position': wb_category_position,
-                    'wb_brand_name': item.css('.brand-name::text').get()
+                    'wb_brand_name': item.css('.brand-name::text').get().strip()
                 }
             else:
                 yield response.follow(clear_url_params(good_url.get()), self.parse_good, dont_filter=allow_dupes, meta={
