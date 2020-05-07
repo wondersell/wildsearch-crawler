@@ -18,7 +18,7 @@ class WildberriesSpider(BaseSpider):
     custom_settings = {
         'USER_AGENT': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.4 Safari/605.1.15',
         'AUTOTHROTTLE_ENABLED': True,
-        'AUTOTHROTTLE_START_DELAY':  1.0,
+        'AUTOTHROTTLE_START_DELAY':  5.0,
         'AUTOTHROTTLE_TARGET_CONCURRENCY': 1.0
     }
 
@@ -75,13 +75,16 @@ class WildberriesSpider(BaseSpider):
                     return val
 
         category_url = response.meta['category_url'] if 'category_url' in response.meta else None
-        category_position = int(response.meta['current_position']) if 'current_position' in response.meta else 1
+        category_position = int(response.meta['current_position']) if 'current_position' in response.meta else 0
 
         category_data = json.loads(response.text)
 
         items_raw = find_goods_items(category_data)
+
+        if items_raw is None:
+            return
+
         items = json.loads(items_raw)
-        items_count = len(items['items'])
 
         current_position = category_position
 
@@ -95,6 +98,11 @@ class WildberriesSpider(BaseSpider):
                 'product_url': item['link'],
                 'image_urls': item['images'],
                 'ozon_id': item['cellTrackingInfo']['id'],
+                'ozon_seller_id': item['cellTrackingInfo']['marketplaceSellerId'],
+                'ozon_sellert_name': None,
+                'ozon_brand_id': item['cellTrackingInfo']['brandId'],
+                'ozon_brand_name': item['cellTrackingInfo']['brand'],
+                'ozon_delivery_schema': item['cellTrackingInfo']['deliverySchema'],
                 'ozon_category_url': category_url,
                 'ozon_category_name': item['cellTrackingInfo']['category'],
                 'ozon_category_position': current_position,
@@ -113,7 +121,7 @@ class WildberriesSpider(BaseSpider):
                 self.parse_category,
                 meta={
                     'category_url': category_url,
-                    'category_position': category_position + items_count
+                    'current_position': current_position
                 }
             )
 
