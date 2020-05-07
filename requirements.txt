@@ -1,5 +1,5 @@
-Scrapy==1.8.0
-requests==2.22.0
-geopy==1.20.0
+Scrapy==2.1.0
+requests==2.23.0
+geopy==1.21.0
 envparse==0.2.0
-extruct==0.8.0
+extruct==0.9.0
