@@ -97,7 +97,7 @@ class WildberriesSpider(BaseSpider):
             wb_category_position += 1
 
         # follow pagination
-        for a in response.css('.pager-bottom a.next'):
+        for a in response.css('.pager-bottom a.pagination-next'):
             yield response.follow(a, callback=self.parse_category, meta={'current_position': wb_category_position})
 
     def parse_good(self, response):
