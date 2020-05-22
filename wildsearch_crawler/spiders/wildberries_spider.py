@@ -182,17 +182,7 @@ class WildberriesSpider(BaseSpider):
 
             loader.add_value('image_urls', image_urls)
 
-        # fill purchase count in inline json
-        # "ordersCount":1100,
-
-
-
-
-
-        #pattern = re.compile(r"wb.product.DomReady.init({.*?});", re.MULTILINE | re.DOTALL)
-
-
-
+        # get purchase count from inline JavaScript block with data
         products_data_js = response.xpath('//script[contains(., "wb.product.DomReady.init")]/text()').get()
         products_data_js = re.sub('\n', '', products_data_js)
         products_data_js = re.sub(r'\s{2,}', '', products_data_js)
