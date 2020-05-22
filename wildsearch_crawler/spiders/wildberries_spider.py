@@ -184,17 +184,22 @@ class WildberriesSpider(BaseSpider):
 
         # get purchase count from inline JavaScript block with data
         products_data_js = response.xpath('//script[contains(., "wb.product.DomReady.init")]/text()').get()
-        products_data_js = re.sub('\n', '', products_data_js)
-        products_data_js = re.sub(r'\s{2,}', '', products_data_js)
 
-        products_init = re.findall(r'wb\.product\.DomReady\.init\(({.*?})\);', products_data_js)[0]
+        if products_data_js is not None and str(products_data_js) != '':
+            products_data_js = re.sub('\n', '', products_data_js)
+            products_data_js = re.sub(r'\s{2,}', '', products_data_js)
 
-        interpreter = dukpy.JSInterpreter()
-        evaled_data = interpreter.evaljs(f'init={products_init};init.data;')
+            products_init = re.findall(r'wb\.product\.DomReady\.init\(({.*?})\);', products_data_js)[0]
 
-        for sku_id, data in evaled_data['nomenclatures'].items():
-            if sku_id == wb_id:
-                loader.add_value('wb_purchases_count', data['ordersCount'])
+            if products_init is not None and str(products_init) != '':
+                interpreter = dukpy.JSInterpreter()
+                evaled_data = interpreter.evaljs(f'init={products_init};init.data;')
+
+                if evaled_data is not None and 'nomenclatures' in evaled_data.keys():
+                    for sku_id, data in evaled_data['nomenclatures'].items():
+                        if sku_id == wb_id:
+                            loader.add_value('wb_purchases_count', data['ordersCount'])
+                            break
 
         if parent_item is not None:
             loader.add_value('wb_parent_id', parent_item.get('wb_id', ''))
