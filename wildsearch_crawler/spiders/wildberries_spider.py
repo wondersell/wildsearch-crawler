@@ -2,6 +2,8 @@ import datetime
 import logging
 import scrapy
 import re
+import json
+import dukpy
 
 from .base_spider import BaseSpider
 from scrapy.loader import ItemLoader
@@ -149,6 +151,8 @@ class WildberriesSpider(BaseSpider):
             if u'Страна производитель' == param_name:
                 wb_manufacture_country = param_value
 
+        wb_id = response.css('div.article span::text').get()
+
         # fill css selectors fields
         loader.add_css('product_name', '.brand-and-name .name::text')
         loader.add_css('wb_reviews_count', '.count-review i::text')
@@ -157,6 +161,7 @@ class WildberriesSpider(BaseSpider):
         loader.add_css('wb_id', 'div.article span::text')
 
         # fill non-css values
+        loader.add_value('wb_id', wb_id)
         loader.add_value('parse_date', datetime.datetime.now().isoformat(" "))
         loader.add_value('marketplace', 'wildberries')
         loader.add_value('product_url', response.url)
@@ -179,7 +184,27 @@ class WildberriesSpider(BaseSpider):
 
         # fill purchase count in inline json
         # "ordersCount":1100,
-        loader.add_value('wb_purchases_count', re.compile('"ordersCount":(\d+),').search(response.text)[1])
+
+
+
+
+
+        #pattern = re.compile(r"wb.product.DomReady.init({.*?});", re.MULTILINE | re.DOTALL)
+
+
+
+        products_data_js = response.xpath('//script[contains(., "wb.product.DomReady.init")]/text()').get()
+        products_data_js = re.sub('\n', '', products_data_js)
+        products_data_js = re.sub(r'\s{2,}', '', products_data_js)
+
+        products_init = re.findall(r'wb\.product\.DomReady\.init\(({.*?})\);', products_data_js)[0]
+
+        interpreter = dukpy.JSInterpreter()
+        evaled_data = interpreter.evaljs(f'init={products_init};init.data;')
+
+        for sku_id, data in evaled_data['nomenclatures'].items():
+            if sku_id == wb_id:
+                loader.add_value('wb_purchases_count', data['ordersCount'])
 
         if parent_item is not None:
             loader.add_value('wb_parent_id', parent_item.get('wb_id', ''))

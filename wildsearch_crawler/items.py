@@ -54,7 +54,6 @@ class WildsearchCrawlerItemWildberries(scrapy.Item):
         output_processor=TakeFirst()
     )
     wb_purchases_count = scrapy.Field(
-        input_processor=MapCompose(str.strip),
         output_processor=TakeFirst()
     )
     wb_price = scrapy.Field(

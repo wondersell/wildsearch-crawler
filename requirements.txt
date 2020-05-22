@@ -3,3 +3,4 @@ requests==2.23.0
 geopy==1.21.0
 envparse==0.2.0
 extruct==0.9.0
+dukpy==0.2.2
