@@ -30,7 +30,7 @@ class WildberriesSpider(BaseSpider):
 
             return
 
-        # default – start crawl from sitemap
+        # start crawl from sitemap or main menu
         if getattr(self, 'use_sitemap', False):
             yield scrapy.Request("https://www.wildberries.ru/services/karta-sayta", self.parse_sitemap)
         else:
