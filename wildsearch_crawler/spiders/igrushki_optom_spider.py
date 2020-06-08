@@ -49,12 +49,20 @@ class IgrushkiOptomSpider(BaseSpider):
         if dimensions is not None:
             dimensions = str.strip(dimensions)
 
+        image_urls = []
+        for tm in (response.css('.details-carousel-item .gallery-photos-item-obj::attr(src)')):
+            image_urls.append(tm.get().strip().replace('xsmall', 'big'))
+
+        for tm in (response.css('.details-carousel-item .gallery-photos-item-obj::attr(data-src)')):
+            image_urls.append(tm.get().strip().replace('xsmall', 'big'))
+
         yield {
             'parse_date': datetime.datetime.now().isoformat(" "),
             'marketplace': 'igrushki-optom',
-            'id': response.css('.details-sku .details-param-value::text').get(),
+            'id': response.css('.details-sku .details-param-value::text').get().strip(),
             'product_url': response.url,
             'price': response.css('.price-number::text').get(),
             'dimensions': dimensions,
             'weight': response.css('.details-param-value-weight::text').get(),
+            'pictures': image_urls
         }
