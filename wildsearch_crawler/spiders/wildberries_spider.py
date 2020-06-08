@@ -31,10 +31,17 @@ class WildberriesSpider(BaseSpider):
             return
 
         # default – start crawl from sitemap
-        yield scrapy.Request("https://www.wildberries.ru/services/karta-sayta", self.parse_sitemap)
+        if getattr(self, 'use_sitemap', False):
+            yield scrapy.Request("https://www.wildberries.ru/services/karta-sayta", self.parse_sitemap)
+        else:
+            yield scrapy.Request('https://www.wildberries.ru/menu/getrendered?lang=ru&burger=true', self.parse_main_menu, headers={'x-requested-with': 'XMLHttpRequest'})
 
     def parse(self, response):
         pass
+
+    def parse_main_menu(self, response):
+        for url in response.css('a::attr(href)'):
+            yield response.follow(url, self.parse_category)
 
     def parse_sitemap(self, response):
         for url in response.css('#sitemap a::attr(href)'):
