@@ -190,6 +190,14 @@ class WildberriesSpider(BaseSpider):
 
             loader.add_value('image_urls', image_urls)
 
+        # create list of features
+        features = {}
+
+        for feature in response.css('.params .pp'):
+            features[feature.css('span:nth-of-type(1) b::text').get().strip()] = feature.css('span:nth-of-type(2)::text').get().strip()
+
+        loader.add_value('features', features)
+
         # get purchase count from inline JavaScript block with data
         products_data_js = response.xpath('//script[contains(., "wb.product.DomReady.init")]/text()').get()
 

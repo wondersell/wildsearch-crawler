@@ -32,6 +32,7 @@ class WildsearchCrawlerItemWildberries(scrapy.Item):
         output_processor=TakeFirst()
     )
     image_urls = scrapy.Field()
+    features = scrapy.Field()
     wb_id = scrapy.Field(
         input_processor=MapCompose(str.strip),
         output_processor=TakeFirst()
