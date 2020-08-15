@@ -16,17 +16,19 @@ class WildberriesSpider(BaseSpider):
     name = "wb"
 
     def start_requests(self):
-        category_url = getattr(self, 'category_url', None)
+        category_urls = getattr(self, 'category_url', None)
 
-        if category_url is not None:
-            yield scrapy.Request(category_url, self.parse_category)
+        if category_urls is not None:
+            for category_url in category_urls.split(','):
+                yield scrapy.Request(category_url, self.parse_category)
 
             return
 
-        good_url = getattr(self, 'good_url', None)
+        good_urls = getattr(self, 'good_url', None)
 
-        if good_url is not None:
-            yield scrapy.Request(good_url, self.parse_good)
+        if good_urls is not None:
+            for good_url in good_urls.split(','):
+                yield scrapy.Request(good_url, self.parse_good)
 
             return
 
