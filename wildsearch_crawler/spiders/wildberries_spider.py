@@ -86,7 +86,7 @@ class WildberriesSpider(BaseSpider):
                 '''
 
                 yield {
-                    'wb_id': datetime.datetime.now().isoformat(" "),
+                    'wb_id': re.findall(r'\/catalog\/(\d{1,20})\/detail\.aspx', clear_url_params(good_url.get()))[0],
                     'product_name': item.css('.goods-name::text').get(),
                     'wb_reviews_count': item.css('.dtList-comments-count::text').get(),
                     'wb_price': item.css('.lower-price::text').get().replace(u'\u20bd', '').replace(u'\u00a0', ''),
