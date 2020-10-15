@@ -53,8 +53,8 @@ ROBOTSTXT_OBEY = False
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-    'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': None,
-    'scrapy_rotated_proxy.downloadmiddlewares.proxy.RotatedProxyMiddleware': 750,
+    'wildsearch_crawler.middlewares.RotatingProxyMiddleware': 610,
+    'wildsearch_crawler.middlewares.BanDetectionMiddleware': 620,
 }
 
 # Enable or disable extensions
@@ -90,5 +90,5 @@ DOWNLOADER_MIDDLEWARES = {
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
-PROXY_STORAGE = 'scrapy_rotated_proxy.extensions.file_storage.FileProxyStorage'
-PROXY_FILE_PATH = ''
+
+ROTATING_PROXY_LIST = 'wondersell:PbNOCqo@104.144.27.189:2943,wondersell:PbNOCqo@104.144.232.149:2943,wondersell:PbNOCqo@23.250.15.135:2943,wondersell:PbNOCqo@104.144.66.83:2943,wondersell:PbNOCqo@104.144.81.113:2943,wondersell:PbNOCqo@104.144.97.79:2943,wondersell:PbNOCqo@104.144.140.120:2943,wondersell:PbNOCqo@104.144.33.145:2943,wondersell:PbNOCqo@104.144.54.182:2943,wondersell:PbNOCqo@192.241.82.125:2943'
