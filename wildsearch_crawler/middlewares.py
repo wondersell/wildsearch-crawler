@@ -359,7 +359,7 @@ class BanDetectionMiddleware(object):
     def _load_policy(cls, crawler):
         policy_path = crawler.settings.get(
             'ROTATING_PROXY_BAN_POLICY',
-            'rotating_proxies.policy.BanDetectionPolicy'
+            'wildsearch_crawler.policy.BanDetectionPolicy'
         )
         policy_cls = load_object(policy_path)
         if hasattr(policy_cls, 'from_crawler'):
