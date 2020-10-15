@@ -89,6 +89,3 @@ DOWNLOADER_MIDDLEWARES = {
 #HTTPCACHE_DIR = 'httpcache'
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
-
-
-ROTATING_PROXY_LIST = 'wondersell:PbNOCqo@104.144.27.189:2943,wondersell:PbNOCqo@104.144.232.149:2943,wondersell:PbNOCqo@23.250.15.135:2943,wondersell:PbNOCqo@104.144.66.83:2943,wondersell:PbNOCqo@104.144.81.113:2943,wondersell:PbNOCqo@104.144.97.79:2943,wondersell:PbNOCqo@104.144.140.120:2943,wondersell:PbNOCqo@104.144.33.145:2943,wondersell:PbNOCqo@104.144.54.182:2943,wondersell:PbNOCqo@192.241.82.125:2943'
