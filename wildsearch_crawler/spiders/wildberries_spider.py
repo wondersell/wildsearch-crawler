@@ -138,7 +138,9 @@ class WildberriesSpider(BaseSpider):
 
         canonical_url = response.css('link[rel=canonical]::attr(href)').get()
 
-        if canonical_url != response.url:
+        print(f'{canonical_url} != {response.url}')
+
+        if canonical_url not in response.url:
             yield response.follow(clear_url_params(canonical_url), self.parse_good, dont_filter=allow_dupes,  meta={
                 'current_position': wb_category_position,
                 'category_url': wb_category_url
