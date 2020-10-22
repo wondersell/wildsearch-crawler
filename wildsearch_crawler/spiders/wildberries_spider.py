@@ -55,34 +55,71 @@ class WildberriesSpider(BaseSpider):
         def clear_url_params(url):
             return url.split('?')[0]
 
-        def parse_id_from_url(url):
-            return url.split('/')[4]
-
         def generate_api_url(response, page):
             path = response.css('#catalog::attr(data-xcatalog-path)').get()
             query = response.css('#catalog::attr(data-xcatalog-query)').get()
 
             return 'https://wbxcatalog.wildberries.ru/' + path + '/catalog?' + query + '&page=' + str(page)
 
-        wb_category_url = clear_url_params(response.url)
-        wb_category_name = response.css('h1::text').get()
+        category_url = clear_url_params(response.url)
+        category_name = response.css('h1::text').get()
 
-        # follow pagination (JSON API mode)
-        wb_category_position = 0
+        if response.css('#catalog::attr(data-xcatalog-path)').get() is not None:
+            wb_category_position = 0
 
-        page_size = int(response.css('#catalog-content::attr(data-page-size)').get())
-        total_goods = int(response.css('#catalog::attr(data-xcatalog-total)').get())
+            page_size = int(response.css('#catalog-content::attr(data-page-size)').get())
+            total_goods = int(response.css('#catalog::attr(data-xcatalog-total)').get())
 
-        pages = math.ceil(total_goods / page_size)
+            pages = math.ceil(total_goods / page_size)
 
-        for page in range(1, pages + 1):
-            yield response.follow(generate_api_url(response, page), callback=self.parse_category_page_json, meta={
-                'current_position': wb_category_position,
-                'category_url': wb_category_url,
-                'category_name': wb_category_name,
-            })
+            for page in range(1, pages + 1):
+                yield response.follow(generate_api_url(response, page), callback=self.parse_category_page_json, meta={
+                    'current_position': wb_category_position,
+                    'category_url': category_url,
+                    'category_name': category_name,
+                })
 
-            wb_category_position += page_size
+                wb_category_position += page_size
+        else:
+            wb_category_position = int(response.meta['current_position']) if 'current_position' in response.meta else 1
+
+            allow_dupes = getattr(self, 'allow_dupes', False)
+            skip_details = getattr(self, 'skip_details', False)
+
+            # follow links to goods pages
+            for item in response.css('.catalog-content .j-card-item'):
+                good_url = item.css('a.ref_goods_n_p::attr(href)')
+
+                if skip_details:
+                    # ItemLoader выключен в угоду скорости
+
+                    yield {
+                        'wb_id': re.findall(r'\/catalog\/(\d{1,20})\/detail\.aspx', clear_url_params(good_url.get()))[
+                            0],
+                        'product_name': item.css('.goods-name::text').get(),
+                        'wb_reviews_count': item.css('.dtList-comments-count::text').get(),
+                        'wb_price': item.css('.lower-price::text').get().replace(u'\u20bd', '').replace(u'\u00a0', ''),
+                        'parse_date': datetime.datetime.now().isoformat(" "),
+                        'marketplace': 'wildberries',
+                        'product_url': clear_url_params(good_url.get()),
+                        'wb_category_url': category_url,
+                        'wb_category_name': category_name,
+                        'wb_category_position': wb_category_position,
+                        'wb_brand_name': item.css('.brand-name::text').get().strip()
+                    }
+                else:
+                    yield response.follow(clear_url_params(good_url.get()), self.parse_good, dont_filter=allow_dupes,
+                                          meta={
+                                              'current_position': wb_category_position,
+                                              'category_url': category_url,
+                                              'category_name': category_name
+                                          })
+
+                wb_category_position += 1
+
+            # follow pagination
+            for a in response.css('.pager-bottom a.pagination-next'):
+                yield response.follow(a, callback=self.parse_category, meta={'current_position': wb_category_position})
 
     def parse_category_page_json(self, response):
         def generate_good_url(id, base_url):
