@@ -4,8 +4,10 @@ import scrapy
 import re
 import json
 import dukpy
+import math
 
 from .base_spider import BaseSpider
+from urllib.parse import urlparse
 from scrapy.loader import ItemLoader
 from wildsearch_crawler.items import WildsearchCrawlerItemWildberries
 
@@ -56,60 +58,70 @@ class WildberriesSpider(BaseSpider):
         def parse_id_from_url(url):
             return url.split('/')[4]
 
-        wb_category_position = int(response.meta['current_position']) if 'current_position' in response.meta else 1
+        def generate_api_url(response, page):
+            path = response.css('#catalog::attr(data-xcatalog-path)').get()
+            query = response.css('#catalog::attr(data-xcatalog-query)').get()
+
+            return 'https://wbxcatalog.wildberries.ru/' + path + '/catalog?' + query + '&page=' + str(page)
+
         wb_category_url = clear_url_params(response.url)
         wb_category_name = response.css('h1::text').get()
 
-        allow_dupes = getattr(self, 'allow_dupes', False)
-        skip_details = getattr(self, 'skip_details', False)
+        # follow pagination (JSON API mode)
+        wb_category_position = 0
 
-        # follow links to goods pages
-        for item in response.css('.catalog-content .j-card-item'):
-            good_url = item.css('a.ref_goods_n_p::attr(href)')
+        page_size = int(response.css('#catalog-content::attr(data-page-size)').get())
+        total_goods = int(response.css('#catalog::attr(data-xcatalog-total)').get())
+
+        pages = math.ceil(total_goods / page_size)
+
+        for page in range(1, pages + 1):
+            yield response.follow(generate_api_url(response, page), callback=self.parse_category_page_json, meta={
+                'current_position': wb_category_position,
+                'category_url': wb_category_url,
+                'category_name': wb_category_name,
+            })
+
+            wb_category_position += page_size
+
+    def parse_category_page_json(self, response):
+        def generate_good_url(id, base_url):
+            base_url_parsed = urlparse(base_url)
+
+            return base_url_parsed.scheme + '://www.wildberries.ru' + '/catalog/' + str(id) + '/detail.aspx'
+
+        skip_details = getattr(self, 'skip_details', False)
+        allow_dupes = getattr(self, 'allow_dupes', False)
+
+        category_data = json.loads(response.text)
+
+        wb_category_position = int(response.meta['current_position']) if 'current_position' in response.meta else 0
+        wb_category_url = response.meta['category_url']
+        wb_category_name = response.meta['category_name']
+
+        for item in category_data['data']['products']:
+            wb_category_position += 1
 
             if skip_details:
-                # ItemLoader выключен в угоду скорости
-                '''
-                current_good_item = WildsearchCrawlerItemWildberries()
-                loader = ItemLoader(item=current_good_item, response=response)
-
-                loader.add_value('wb_id', parse_id_from_url(good_url.get()))
-                loader.add_value('product_name', item.css('.goods-name::text').get())
-                loader.add_value('parse_date', datetime.datetime.now().isoformat(" "))
-                loader.add_value('marketplace', 'wildberries')
-                loader.add_value('product_url', clear_url_params(good_url.get()))
-                loader.add_value('wb_category_url', wb_category_url)
-                loader.add_value('wb_category_position', wb_category_position)
-                loader.add_value('wb_brand_name', item.css('.brand-name::text').get())
-
-                yield loader.load_item()
-                '''
-
                 yield {
-                    'wb_id': re.findall(r'\/catalog\/(\d{1,20})\/detail\.aspx', clear_url_params(good_url.get()))[0],
-                    'product_name': item.css('.goods-name::text').get(),
-                    'wb_reviews_count': item.css('.dtList-comments-count::text').get(),
-                    'wb_price': item.css('.lower-price::text').get().replace(u'\u20bd', '').replace(u'\u00a0', ''),
+                    'wb_id': item['id'],
+                    'product_name': item['name'],
+                    'wb_reviews_count': item['feedbackCount'],
+                    'wb_price': item['salePrice'],
                     'parse_date': datetime.datetime.now().isoformat(" "),
                     'marketplace': 'wildberries',
-                    'product_url': clear_url_params(good_url.get()),
+                    'product_url': generate_good_url(item['id'], response.url),
                     'wb_category_url': wb_category_url,
                     'wb_category_name': wb_category_name,
                     'wb_category_position': wb_category_position,
-                    'wb_brand_name': item.css('.brand-name::text').get().strip()
+                    'wb_brand_name': item['brand']
                 }
             else:
-                yield response.follow(clear_url_params(good_url.get()), self.parse_good, dont_filter=allow_dupes, meta={
+                yield response.follow(generate_good_url(item['id'], response.url), self.parse_good, dont_filter=allow_dupes, meta={
                     'current_position': wb_category_position,
                     'category_url': wb_category_url,
                     'category_name': wb_category_name
                 })
-
-            wb_category_position += 1
-
-        # follow pagination
-        for a in response.css('.pager-bottom a.pagination-next'):
-            yield response.follow(a, callback=self.parse_category, meta={'current_position': wb_category_position})
 
     def parse_good(self, response):
         def clear_url_params(url):
@@ -121,6 +133,16 @@ class WildberriesSpider(BaseSpider):
             link_param = response.css('#Comments a.show-more::attr(data-link)').get()
 
             return re.sub('detail\.aspx.*$', f'otzyvy?field=Date&order={sort}&link={link_param}', base_url)
+
+        def add_netloc_to_url(url, base_url):
+            url_parsed = urlparse(url)
+
+            if url_parsed.scheme == '' and url_parsed.netloc == '':
+                base_url_parsed = urlparse(base_url)
+
+                url = base_url_parsed.scheme + '://' + base_url_parsed.netloc + url
+
+            return url
 
         skip_images = getattr(self, 'skip_images', False)
         skip_variants = getattr(self, 'skip_variants', False)
@@ -137,10 +159,9 @@ class WildberriesSpider(BaseSpider):
         wb_category_position = response.meta['current_position'] if 'current_position' in response.meta else None
 
         canonical_url = response.css('link[rel=canonical]::attr(href)').get()
+        canonical_url = add_netloc_to_url(canonical_url, response.url)
 
-        print(f'{canonical_url} != {response.url}')
-
-        if canonical_url not in response.url:
+        if canonical_url != response.url:
             yield response.follow(clear_url_params(canonical_url), self.parse_good, dont_filter=allow_dupes,  meta={
                 'current_position': wb_category_position,
                 'category_url': wb_category_url
@@ -227,7 +248,7 @@ class WildberriesSpider(BaseSpider):
         # get reviews dates
         yield response.follow(generate_reviews_link(response.url, 'Asc'), callback=self.parse_good_first_review_date, errback=self.parse_good_errback, meta={'loader': loader}, headers={'x-requested-with': 'XMLHttpRequest'})
 
-        # follow goods variants only if we scrap parent item
+        # follow goods variants only if we scrape parent item
         if skip_variants is False and parent_item is None:
             for variant in (response.css('.options ul li a::attr(href)')):
                 yield response.follow(clear_url_params(variant.get()), callback=self.parse_good, meta={
