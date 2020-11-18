@@ -67,10 +67,10 @@ class WildberriesSpider(BaseSpider):
         if response.css('#catalog::attr(data-xcatalog-path)').get() is not None:
             wb_category_position = 0
 
-            page_size = int(response.css('#catalog-content::attr(data-page-size)').get())
+            items_on_page = len(response.css('.j-card-item'))
             total_goods = int(response.css('#catalog::attr(data-xcatalog-total)').get())
 
-            pages = math.ceil(total_goods / page_size)
+            pages = math.ceil(total_goods / items_on_page)
 
             for page in range(1, pages + 1):
                 yield response.follow(generate_api_url(response, page), callback=self.parse_category_page_json, meta={
@@ -79,7 +79,7 @@ class WildberriesSpider(BaseSpider):
                     'category_name': category_name,
                 })
 
-                wb_category_position += page_size
+                wb_category_position += items_on_page
         else:
             wb_category_position = int(response.meta['current_position']) if 'current_position' in response.meta else 1
 
