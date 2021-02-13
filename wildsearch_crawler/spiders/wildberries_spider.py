@@ -261,23 +261,15 @@ class WildberriesSpider(BaseSpider):
         loader.add_value('features', features)
 
         # get purchase count from inline JavaScript block with data
-        products_data_js = response.xpath('//script[contains(., "wb.product.DomReady.init")]/text()').get()
+        products_data_js_v1 = response.xpath('//script[contains(., "wb.product.DomReady.init")]/text()').get()
 
-        if products_data_js is not None and str(products_data_js) != '':
-            products_data_js = re.sub('\n', '', products_data_js)
-            products_data_js = re.sub(r'\s{2,}', '', products_data_js)
+        if products_data_js_v1 is not None and str(products_data_js_v1) != '':
+            loader.add_value('wb_purchases_count', self.parse_purchases_count_v1(products_data_js_v1, wb_id))
 
-            products_init = re.findall(r'wb\.product\.DomReady\.init\(({.*?})\);', products_data_js)[0]
+        products_data_js_v2 = response.xpath('//script[contains(., "wb.spa.init")]/text()').get()
 
-            if products_init is not None and str(products_init) != '':
-                interpreter = dukpy.JSInterpreter()
-                evaled_data = interpreter.evaljs(f'init={products_init};init.data;')
-
-                if evaled_data is not None and 'nomenclatures' in evaled_data.keys():
-                    for sku_id, data in evaled_data['nomenclatures'].items():
-                        if sku_id == wb_id:
-                            loader.add_value('wb_purchases_count', data['ordersCount'])
-                            break
+        if products_data_js_v2 is not None and str(products_data_js_v2) != '':
+            loader.add_value('wb_purchases_count', self.parse_purchases_count_v2(products_data_js_v2, wb_id))
 
         if parent_item is not None:
             loader.add_value('wb_parent_id', parent_item.get('wb_id', ''))
@@ -291,6 +283,43 @@ class WildberriesSpider(BaseSpider):
                 yield response.follow(clear_url_params(variant.get()), callback=self.parse_good, meta={
                     'parent_item': current_good_item
                 })
+
+    def parse_purchases_count_v1(self, products_data_js, wb_id):
+        products_data_js = re.sub('\n', '', products_data_js)
+        products_data_js = re.sub(r'\s{2,}', '', products_data_js)
+
+        products_init = re.findall(r'wb\.product\.DomReady\.init\(({.*?})\);', products_data_js)[0]
+
+        if products_init is not None and str(products_init) != '':
+            interpreter = dukpy.JSInterpreter()
+            evaled_data = interpreter.evaljs(f'init={products_init};init.data;')
+
+            if evaled_data is not None and 'nomenclatures' in evaled_data.keys():
+                for sku_id, data in evaled_data['nomenclatures'].items():
+                    if sku_id == wb_id:
+                        return data['ordersCount']
+
+    def parse_purchases_count_v2(self, products_data_js, wb_id):
+        products_data_js = re.sub('\n', '', products_data_js)
+        products_data_js = re.sub(r'\s{2,}', '', products_data_js)
+
+        products_data_js = re.sub('routes: routes,', '', products_data_js)
+        products_data_js = re.sub('routesDictionary: routesDictionary,', '', products_data_js)
+
+        products_init = re.findall(r'wb\.spa\.init\(({.*?})\);', products_data_js)[0]
+
+        if products_init is not None and str(products_init) != '':
+            interpreter = dukpy.JSInterpreter()
+            evaled_data = interpreter.evaljs(f'init={products_init};init.router;')
+
+            if 'ssrModel' in evaled_data.keys():
+                ssrModel = evaled_data['ssrModel']
+
+                if 'selectedNomenclature' in ssrModel.keys():
+                    selectedNomenclature = ssrModel['selectedNomenclature']
+
+                    if 'ordersCount' in selectedNomenclature:
+                        return selectedNomenclature['ordersCount']
 
     def parse_good_first_review_date(self, response):
         if len(response.css('.comment')) > 0:
