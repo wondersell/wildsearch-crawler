@@ -247,7 +247,7 @@ class WildberriesSpider(BaseSpider):
         if skip_images is False:
             image_urls = []
 
-            for tm in (response.css('.pv-carousel .carousel a img::attr(src)')):
+            for tm in (response.css('.pv-carousel .swiper-slide img::attr(src)')):
                 image_urls.append(tm.get().strip().replace('tm', 'big'))
 
             loader.add_value('image_urls', image_urls)
