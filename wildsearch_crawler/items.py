@@ -17,6 +17,14 @@ def clear_price(text):
     return text
 
 
+def clear_reviews_count(text):
+    text = text.replace('отзыва', '')
+    text = text.replace('отзывов', '')
+    text = text.replace('отзыв', '')
+
+    return text
+
+
 class WildsearchCrawlerItemWildberries(scrapy.Item):
     parse_date = scrapy.Field(
         output_processor=TakeFirst()
@@ -51,7 +59,7 @@ class WildsearchCrawlerItemWildberries(scrapy.Item):
         output_processor=TakeFirst()
     )
     wb_reviews_count = scrapy.Field(
-        input_processor=MapCompose(str.strip),
+        input_processor=MapCompose(clear_reviews_count, str.strip),
         output_processor=TakeFirst()
     )
     wb_purchases_count = scrapy.Field(
