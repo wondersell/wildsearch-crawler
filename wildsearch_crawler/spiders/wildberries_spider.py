@@ -59,7 +59,7 @@ class WildberriesSpider(BaseSpider):
             path = response.css('#catalog::attr(data-xcatalog-path)').get()
             query = response.css('#catalog::attr(data-xcatalog-query)').get()
 
-            return 'https://wbxcatalog-ru.wildberries.ru/' + path + '/catalog?' + query + '&page=' + str(page)
+            return 'https://wbxcatalog-ru.wildberries.ru/nm-2-card/catalog?' + query + '&page=' + str(page)
 
         category_url = clear_url_params(response.url)
         category_name = response.css('h1::text').get()
