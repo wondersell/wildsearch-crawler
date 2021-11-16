@@ -1,5 +1,6 @@
 import json
 import logging
+import math
 import re
 
 import dukpy
@@ -23,6 +24,27 @@ class WildberriesCommentsSpider(BaseSpider):
         pass
 
     def parse_good(self, response):
+        imt_id, feedbacks_count = self.load_product_info(response)
+
+        step = 1000
+        skip = 0
+
+        for _ in range(math.ceil(feedbacks_count / step)):
+            request_body = {
+                "imtId": imt_id,
+                "skip": skip,
+                "take": step,
+                "order": "dateAsc"
+            }
+
+            yield scrapy.Request("https://public-feedbacks.wildberries.ru/api/v1/feedbacks/site", self.parse_comments_request, method="POST", body=json.dumps(request_body))
+
+            skip += step
+
+    def load_product_info(self, response):
+        imt_id = None
+        feedbacks_count = 0
+
         products_data_js = response.xpath('//script[contains(., "wb.spa.init")]/text()').get()
         products_data_js = re.sub('\n', '', products_data_js)
         products_data_js = re.sub(r'\s{2,}', '', products_data_js)
@@ -38,23 +60,9 @@ class WildberriesCommentsSpider(BaseSpider):
 
             if 'ssrModel' in evaled_data.keys():
                 imt_id = evaled_data['ssrModel']['product']['imtId']
+                feedbacks_count = evaled_data['ssrModel']['product']['feedbacks']
 
-
-        step = 1000
-        skip = 0
-
-        while True:
-            request_body = {
-                "imtId": imt_id,
-                "skip": skip,
-                "take": step,
-                "order": "dateAsc"
-            }
-
-            yield scrapy.Request("https://public-feedbacks.wildberries.ru/api/v1/feedbacks/site",
-                                 self.parse_comments_request, method="POST", body=json.dumps(request_body))
-
-            skip += step
+        return imt_id, feedbacks_count
 
     def parse_comments_request(self, response):
         feedbacks = json.loads(response.text)
