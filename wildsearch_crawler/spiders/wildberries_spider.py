@@ -1,15 +1,17 @@
 import datetime
-import logging
-import scrapy
-import re
 import json
-import dukpy
+import logging
 import math
+import re
+from urllib.parse import urlparse
+
+import dukpy
+import scrapy
+from scrapy.loader import ItemLoader
+
+from wildsearch_crawler.items import WildsearchCrawlerItemWildberries
 
 from .base_spider import BaseSpider
-from urllib.parse import urlparse
-from scrapy.loader import ItemLoader
-from wildsearch_crawler.items import WildsearchCrawlerItemWildberries
 
 logger = logging.getLogger(__name__)
 

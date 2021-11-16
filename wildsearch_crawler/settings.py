@@ -53,7 +53,7 @@ ROBOTSTXT_OBEY = False
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-    'wildsearch_crawler.middlewares.RotatingProxyMiddleware': 610,
+#    'wildsearch_crawler.middlewares.RotatingProxyMiddleware': 610,
     'wildsearch_crawler.middlewares.BanDetectionMiddleware': 620,
 }
 

@@ -1,7 +1,7 @@
 import datetime
 import logging
+from urllib.parse import urljoin, urlparse
 
-from urllib.parse import urlparse, urljoin
 from .base_spider import BaseSpider
 
 logger = logging.getLogger(__name__)

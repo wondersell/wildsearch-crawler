@@ -1,6 +1,7 @@
-import scrapy
 import logging
+
 import requests
+import scrapy
 from envparse import env
 
 logger = logging.getLogger(__name__)

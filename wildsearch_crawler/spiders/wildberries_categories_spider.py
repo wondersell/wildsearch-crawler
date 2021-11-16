@@ -1,9 +1,10 @@
 import datetime
 import logging
+from urllib.parse import urljoin, urlparse
+
 import scrapy
 
 from .base_spider import BaseSpider
-from urllib.parse import urlparse, urljoin
 
 logger = logging.getLogger(__name__)
 

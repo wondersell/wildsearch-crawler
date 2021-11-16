@@ -1,6 +1,7 @@
-import scrapy
 import logging
 import re
+
+import scrapy
 
 from .base_spider import BaseSpider
 

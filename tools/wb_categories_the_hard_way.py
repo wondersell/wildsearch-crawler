@@ -2,9 +2,10 @@
 
 import csv
 import logging
+from typing import Any, Dict
 
-from typing import Dict, Any
 from bs4 import BeautifulSoup
+
 
 def save_csv(file_name, data):
     file = open(file_name, 'w')

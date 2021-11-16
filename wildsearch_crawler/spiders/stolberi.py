@@ -1,13 +1,15 @@
-import scrapy
-import logging
 import datetime
+import logging
 import re
+from urllib.parse import urljoin, urlparse
+
 import geopy.distance
+import scrapy
+from scrapy.loader import ItemLoader
+
+from wildsearch_crawler.items import WildsearchCrawlerItemProductcenterProducer
 
 from .base_spider import BaseSpider
-from scrapy.loader import ItemLoader
-from wildsearch_crawler.items import WildsearchCrawlerItemProductcenterProducer
-from urllib.parse import urlparse, urljoin
 
 logger = logging.getLogger(__name__)
 

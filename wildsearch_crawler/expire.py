@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-import time
-import random
 import logging
 import math
+import random
+import time
 
 import attr
 

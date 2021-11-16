@@ -1,6 +1,7 @@
-import scrapy
-import logging
 import datetime
+import logging
+
+import scrapy
 
 from .base_spider import BaseSpider
 
