@@ -4,4 +4,4 @@ geopy==2.0.0
 envparse==0.2.0
 extruct==0.10.0
 dukpy==0.2.3
-twisted==20.3.0
+twisted==22.2.0
