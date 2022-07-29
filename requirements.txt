@@ -1,4 +1,4 @@
-Scrapy==2.4.0
+Scrapy==2.6.2
 requests==2.24.0
 geopy==2.0.0
 envparse==0.2.0
